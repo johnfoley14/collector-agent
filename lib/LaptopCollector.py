@@ -3,14 +3,23 @@ from lib.models.DeviceData import DeviceData
 from lib.UploaderQueues import UploaderQueues
 from datetime import datetime
 import time
+import threading
 
 class LaptopCollector:
     def __init__(self, uploader_queues: UploaderQueues):
-        self.uploader_queues = uploader_queues
+        self.uploader_queues = uploader_queues        
+        self._stop_event = threading.Event()
+    
+    def stop(self):
+        # Signal an event to stop the thread
+        self._stop_event.set() 
+
 
     def get_os_metrics(self, interval: int = 1):
+        # when a new thread is created, the stop event is cleared to collect data again
+        self._stop_event.clear()
         # Get RAM usage every second
-        while True:
+        while not self._stop_event.is_set():
             ram_usage = psutil.virtual_memory().percent
             io_counters_start = psutil.disk_io_counters()
             time.sleep(interval)

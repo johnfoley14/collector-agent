@@ -64,7 +64,6 @@ class UploaderQueues:
             }
 
             self.logger.info(f"Sending data to server: laptop-entries: {laptop_count}, embedded-entries: {embedded_count}")
-            print(payload)
             # Send data to the server
             try:
                 response = requests.post('http://localhost:5001/post_metrics', json=payload)
