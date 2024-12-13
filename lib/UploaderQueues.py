@@ -55,6 +55,10 @@ class UploaderQueues:
                     embedded_count += 1
                     embedded_data.append(data.__dict__)
 
+            # If no data to send to not send request
+            if laptop_count == 0 and embedded_count == 0:
+                continue
+
             payload = {
                 "devices": [
                     {"name": "johns-laptop", "data": laptop_data},
