@@ -8,5 +8,8 @@
             "ERROR": 40,
             "CRITICAL": 50
         }
-    }
+    },
+    "devices": [{"name": "johns-laptop"},
+                {"name": "esp-32"}
+    ]   
 }
