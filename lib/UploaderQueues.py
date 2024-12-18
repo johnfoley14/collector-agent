@@ -41,7 +41,9 @@ class UploaderQueues:
 
     def is_laptop_queue_empty(self)-> bool:
         return self.laptop_data_queue.empty()
-    
+
+
+
     def send_periodic_request(self):
         while True:
             # Sleep for 10 seconds (avoiding busy waiting to save CPU cycles)
@@ -73,14 +75,15 @@ class UploaderQueues:
                     {"name": "johns-laptop", "data": laptop_data},
                     {"name": "esp-32", "data": embedded_data},
                 ],
-                "guid": "12347",
+                "guid": self.config_manager.get_guid(),
             }
+            print(payload)
 
             self.logger.info(f"Sending data to server: laptop-entries: {laptop_count}, embedded-entries: {embedded_count}")
             # Send data to the server
             try:
-                # response = requests.post('https://johnfoley14.pythonanywhere.com/post_metrics', json=payload)
-                response = requests.post('http://localhost:5001/post_metrics', json=payload)
+                response = requests.post('https://johnfoley14.pythonanywhere.com/post_metrics', json=payload)
+                # response = requests.post('http://localhost:5001/post_metrics', json=payload)
                 if response.status_code == 200:
                     for device in self.config_manager.get_devices():
                         self.manage_collection(device, response.json().get("message").get(device))

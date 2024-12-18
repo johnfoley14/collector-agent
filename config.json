@@ -9,7 +9,9 @@
             "CRITICAL": 50
         }
     },
-    "devices": ["johns-laptop",
-                "esp-32"
-    ]   
+    "devices": [
+        "johns-laptop",
+        "esp-32"
+    ],
+    "guid": "27b0a7fb-8dbf-49ff-9809-423899ee2486"
 }

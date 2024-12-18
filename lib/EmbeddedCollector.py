@@ -6,6 +6,7 @@ import threading
 import select
 import struct
 from datetime import datetime
+import requests
 
 class EmbeddedCollector:
     def __init__(self, uploader_queues: 'UploaderQueues'):
@@ -17,6 +18,7 @@ class EmbeddedCollector:
         self._stop_event = threading.Event()
         self.conn = None
         self.addr = None
+        self.url = f"http://192.168.18.30/message_embedded"
 
     def stop(self):
         # Send the "close" message to the embedded device
@@ -26,6 +28,10 @@ class EmbeddedCollector:
         # Close the connection and the socket
         if self.conn:
             self.conn.close()
+
+        
+        data = {"message": 0}
+        requests.post(self.url, json=data)
         
         # Set the stop event to signal the thread to stop
         self._stop_event.set()
@@ -34,7 +40,9 @@ class EmbeddedCollector:
         # Reset the stop event and re-open the socket
         self._stop_event.clear()
         self.server.listen()
-        self.uploader_queues.logger.info(f"Listening at {self.server.getsockname()}")   
+        self.uploader_queues.logger.info(f"Listening at {self.server.getsockname()}")  
+        data = {"message": 0}
+        requests.post(self.url, json=data) 
 
         while not self._stop_event.is_set():
             try:
@@ -47,7 +55,6 @@ class EmbeddedCollector:
                         data = self.conn.recv(1024)
                         if not data:
                             break
-                        print(f"Received: {data}")
                         self.parse_byte_array_to_snapshots(data)
             except Exception as e:
                 self.uploader_queues.logger.info(f"Connected to {self.addr}")                
@@ -80,8 +87,6 @@ class EmbeddedCollector:
 
             # Add the snapshot to the list
             device = DeviceData(datetime.utcfromtimestamp(adjusted_timestamp / 1_000_000).isoformat(), {'Button State': button_state, 'Free Heap Size': free_heap_size, 'Motion Reading': motion_reading})
-            print(device.metrics)
-            print(device.timestamp)
             self.uploader_queues.add_to_embedded_queue(device)
 
             # Advance the offset
