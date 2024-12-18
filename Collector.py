@@ -5,7 +5,6 @@ from lib.UploaderQueues import UploaderQueues
 from lib.EmbeddedCollector import EmbeddedCollector
 from lib.LaptopCollector import LaptopCollector
 from lib.Logger import Logger
-from lib.ConfigManagement import ConfigManagement
 
 app = Flask(__name__)
 
@@ -17,9 +16,6 @@ with app.app_context():
     laptopThread = None
     logger = Logger()
     g.uploader_queues = UploaderQueues(logger)
-    g.config_manager = ConfigManagement()
-    g.config_manager.load_config()
-
     
     # Start embedded collector
     def start_embedded_collector():

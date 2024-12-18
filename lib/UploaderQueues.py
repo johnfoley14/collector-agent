@@ -1,5 +1,6 @@
 from queue import Queue
 from lib.models.DeviceData import DeviceData
+from lib.ConfigManagement import ConfigManagement
 from lib.Logger import Logger
 import requests
 import time
@@ -10,6 +11,8 @@ class UploaderQueues:
         self.embedded_data_queue = Queue()
         self.laptop_data_queue = Queue()
         self.logger = logger
+        self.config_manager = ConfigManagement()
+        self.config_manager.load_config()
 
     def set_collector_threads(self, thread_resources):
         self.embedded_collector = thread_resources.get("embedded_collector")
@@ -79,8 +82,9 @@ class UploaderQueues:
                 # response = requests.post('https://johnfoley14.pythonanywhere.com/post_metrics', json=payload)
                 response = requests.post('http://localhost:5001/post_metrics', json=payload)
                 if response.status_code == 200:
-                    self.manage_collection("johns-laptop", response.json().get("message").get("johns-laptop"))
-                        
+                    for device in self.config_manager.get_devices():
+                        self.manage_collection(device, response.json().get("message").get(device))
+                    self.logger.info(f"Data sent to server: {response.status_code, response.text}")
                 else:
                     self.logger.error(f"Error sending data to server: {response.status_code, response.text}")
             except requests.RequestException as e:
@@ -88,31 +92,31 @@ class UploaderQueues:
 
     # turn off/on data collection as needed
     def manage_collection(self, device_name, instruction):
-
         try:
             if instruction == "STOP":
                 if device_name == "esp-32" and self.embeddedThread and self.embeddedThread.is_alive():
+                    # stop signals the thread to stop collecting data and exit the function
                     self.embedded_collector.stop()
                     self.embeddedThread.join()
-                    self.logger.info("Embedded collector stopped")
+                    self.logger.info(f"Embedded collector stopped. Thread count: {len(threading.enumerate())}")
                     return True
                 elif device_name == "johns-laptop" and self.laptopThread and self.laptopThread.is_alive():
                     self.laptop_collector.stop()
                     self.laptopThread.join()
-                    self.logger.info("Laptop collector stopped")
+                    self.logger.info(f"Laptop collector stopped. Thread count: {len(threading.enumerate())}")
                     return True
             elif instruction == "START":
                 if device_name == "esp-32" and (not self.embeddedThread or not self.embeddedThread.is_alive()):
                     self.embeddedThread = threading.Thread(target=self.embedded_collector.listen)
                     self.embeddedThread.daemon = True
                     self.embeddedThread.start()
-                    self.logger.info("Embedded collector started")
+                    self.logger.info(f"Embedded collector started. Thread count: {len(threading.enumerate())}")
                     return True
                 elif device_name == "johns-laptop" and (not self.laptopThread or not self.laptopThread.is_alive()):
                     self.laptopThread = threading.Thread(target=self.laptop_collector.get_os_metrics)
                     self.laptopThread.daemon = True
                     self.laptopThread.start()
-                    self.logger.info("Laptop collector started")
+                    self.logger.info(f"Laptop collector started. Thread count: {len(threading.enumerate())}")
                     return True
             else:
                 self.logger.error("Invalid instruction")
@@ -120,5 +124,4 @@ class UploaderQueues:
         except Exception as e:
             self.logger.error(f"Error {instruction}ing {device_name} collector: {str(e)}")
             return False
-
     

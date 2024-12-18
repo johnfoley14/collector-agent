@@ -9,7 +9,7 @@
             "CRITICAL": 50
         }
     },
-    "devices": [{"name": "johns-laptop"},
-                {"name": "esp-32"}
+    "devices": ["johns-laptop",
+                "esp-32"
     ]   
 }
