@@ -77,13 +77,12 @@ class UploaderQueues:
                 ],
                 "guid": self.config_manager.get_guid(),
             }
-            print(payload)
 
             self.logger.info(f"Sending data to server: laptop-entries: {laptop_count}, embedded-entries: {embedded_count}")
             # Send data to the server
             try:
-                response = requests.post('https://johnfoley14.pythonanywhere.com/post_metrics', json=payload)
-                # response = requests.post('http://localhost:5001/post_metrics', json=payload)
+                # response = requests.post('https://johnfoley14.pythonanywhere.com/post_metrics', json=payload)
+                response = requests.post('http://localhost:5001/post_metrics', json=payload)
                 if response.status_code == 200:
                     for device in self.config_manager.get_devices():
                         self.manage_collection(device, response.json().get("message").get(device))
