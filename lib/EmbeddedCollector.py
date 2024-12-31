@@ -36,6 +36,8 @@ class EmbeddedCollector:
         self._stop_event.clear()
         self.server.listen()
         self.uploader_queues.logger.info(f"Listening at {self.server.getsockname()}")
+
+        # send message to embedded device to start collecting data
         data = {"message": 1}
         requests.post(self.url, json=data) 
 

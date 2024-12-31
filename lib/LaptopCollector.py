@@ -2,7 +2,6 @@ import psutil
 from lib.models.DeviceData import DeviceData
 from lib.UploaderQueues import UploaderQueues
 from datetime import datetime
-import time
 import threading
 
 class LaptopCollector:
